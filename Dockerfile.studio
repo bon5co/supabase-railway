@@ -1,0 +1,20 @@
+FROM supabase/studio:2026.09.07-sha-7996410
+
+ENV HOSTNAME=:: \
+    STUDIO_PG_META_URL=http://meta.railway.internal:8080 \
+    POSTGRES_PORT=5432 \
+    POSTGRES_DB=postgres \
+    POSTGRES_USER_READ_WRITE=postgres \
+    PGRST_DB_SCHEMAS=public,storage,graphql_public \
+    PGRST_DB_MAX_ROWS=1000 \
+    PGRST_DB_EXTRA_SEARCH_PATH=public \
+    DEFAULT_ORGANIZATION_NAME="Default Organization" \
+    DEFAULT_PROJECT_NAME="Default Project" \
+    ENABLED_FEATURES_LOGS_ALL=false \
+    SNIPPETS_MANAGEMENT_FOLDER=/app/snippets \
+    EDGE_FUNCTIONS_MANAGEMENT_FOLDER=/app/edge-functions
+
+COPY keys.js /usr/local/lib/supabase-keys.js
+COPY studio-entrypoint.sh /usr/local/bin/railway-entrypoint.sh
+RUN chmod +x /usr/local/bin/railway-entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/railway-entrypoint.sh"]

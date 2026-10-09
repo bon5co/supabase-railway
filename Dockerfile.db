@@ -1,0 +1,22 @@
+FROM supabase/postgres:17.6.1.136
+
+# Upstream's docker-compose mounts these into the init directories; baking them in is
+# what lets the template run without a bind mount.
+COPY sql/_supabase.sql /docker-entrypoint-initdb.d/migrations/97-_supabase.sql
+COPY sql/realtime.sql  /docker-entrypoint-initdb.d/migrations/99-realtime.sql
+COPY sql/logs.sql      /docker-entrypoint-initdb.d/migrations/99-logs.sql
+COPY sql/pooler.sql    /docker-entrypoint-initdb.d/migrations/99-pooler.sql
+COPY sql/webhooks.sql  /docker-entrypoint-initdb.d/init-scripts/98-webhooks.sql
+COPY sql/roles.sql     /docker-entrypoint-initdb.d/init-scripts/99-roles.sql
+COPY sql/jwt.sql       /docker-entrypoint-initdb.d/init-scripts/99-jwt.sql
+
+ENV POSTGRES_HOST=/var/run/postgresql \
+    POSTGRES_PORT=5432 \
+    PGPORT=5432 \
+    POSTGRES_DB=postgres \
+    PGDATABASE=postgres \
+    JWT_EXP=3600
+
+COPY db-entrypoint.sh /usr/local/bin/railway-entrypoint.sh
+RUN chmod +x /usr/local/bin/railway-entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/railway-entrypoint.sh"]

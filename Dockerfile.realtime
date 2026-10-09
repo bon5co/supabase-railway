@@ -1,0 +1,19 @@
+FROM supabase/realtime:v2.134.10
+
+ENV DB_PORT=5432 \
+    DB_USER=supabase_admin \
+    DB_NAME=postgres \
+    DB_AFTER_CONNECT_QUERY="SET search_path TO _realtime" \
+    ECTO_IPV6=true \
+    ERL_AFLAGS="-proto_dist inet6_tcp" \
+    DNS_NODES="''" \
+    RLIMIT_NOFILE=10000 \
+    APP_NAME=realtime \
+    SEED_SELF_HOST=true \
+    RUN_JANITOR=true \
+    DISABLE_HEALTHCHECK_LOGGING=true
+
+# Railway injects PORT into every service and it beats image ENV; this one is private, so pin it.
+COPY realtime-entrypoint.sh /usr/local/bin/railway-entrypoint.sh
+RUN chmod +x /usr/local/bin/railway-entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/railway-entrypoint.sh"]

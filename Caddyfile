@@ -1,0 +1,83 @@
+{
+	admin off
+	auto_https off
+}
+
+(cors) {
+	header Access-Control-Allow-Origin "*"
+	header Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD"
+	header Access-Control-Allow-Headers "{http.request.header.Access-Control-Request-Headers}"
+	header Access-Control-Expose-Headers "Content-Range, Content-Encoding, Content-Length, Range"
+	header Access-Control-Max-Age "3600"
+}
+
+:{$PORT} {
+	# Railway healthcheck target.
+	handle /healthz {
+		respond "ok" 200
+	}
+
+	# supabase-js sends both headers; plain curl with only the apikey header should still
+	# act as that key, which is what the upstream gateway's key-auth plugin did.
+	@fromkey {
+		header apikey *
+		not header Authorization *
+	}
+	request_header @fromkey Authorization "Bearer {http.request.header.apikey}"
+
+	@preflight method OPTIONS
+	handle @preflight {
+		import cors
+		respond 204
+	}
+
+	handle_path /auth/v1/* {
+		import cors
+		reverse_proxy auth.railway.internal:9999 {
+			header_down -Access-Control-Allow-Origin
+		}
+	}
+
+	handle_path /rest/v1/* {
+		import cors
+		reverse_proxy rest.railway.internal:3000 {
+			header_down -Access-Control-Allow-Origin
+		}
+	}
+
+	handle /graphql/v1 {
+		import cors
+		rewrite * /rpc/graphql
+		reverse_proxy rest.railway.internal:3000 {
+			header_up Content-Profile graphql_public
+			header_down -Access-Control-Allow-Origin
+		}
+	}
+
+	handle_path /realtime/v1/api/* {
+		import cors
+		rewrite * /api{uri}
+		reverse_proxy realtime.railway.internal:4000
+	}
+
+	handle /realtime/v1/* {
+		uri replace /realtime/v1 /socket
+		reverse_proxy realtime.railway.internal:4000
+	}
+
+	handle_path /storage/v1/* {
+		import cors
+		reverse_proxy storage.railway.internal:5000 {
+			header_up X-Forwarded-Prefix /storage/v1
+			header_down -Access-Control-Allow-Origin
+		}
+	}
+
+	# Everything else is Studio, behind the dashboard login.
+	handle {
+		basic_auth {
+			{$DASHBOARD_USERNAME} {$DASHBOARD_PASSWORD_HASH}
+		}
+		reverse_proxy studio.railway.internal:3000
+	}
+}

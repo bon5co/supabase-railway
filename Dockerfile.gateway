@@ -1,0 +1,8 @@
+FROM caddy:2-alpine
+
+ENV DASHBOARD_USERNAME=supabase
+
+COPY Caddyfile /etc/caddy/Caddyfile
+COPY gateway-entrypoint.sh /usr/local/bin/railway-entrypoint.sh
+RUN chmod +x /usr/local/bin/railway-entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/railway-entrypoint.sh"]
