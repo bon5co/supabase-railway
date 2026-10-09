@@ -57,12 +57,16 @@
 	handle_path /realtime/v1/api/* {
 		import cors
 		rewrite * /api{uri}
-		reverse_proxy realtime.railway.internal:4000
+		reverse_proxy realtime.railway.internal:4000 {
+			header_up Host realtime-dev.supabase-realtime
+		}
 	}
 
 	handle /realtime/v1/* {
 		uri replace /realtime/v1 /socket
-		reverse_proxy realtime.railway.internal:4000
+		reverse_proxy realtime.railway.internal:4000 {
+			header_up Host realtime-dev.supabase-realtime
+		}
 	}
 
 	handle_path /storage/v1/* {
