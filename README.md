@@ -1,5 +1,9 @@
 # supabase-railway
 
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/supabase-or-just-updated-firebase-altern?referralCode=Z1xivh&utm_medium=integration&utm_source=template&utm_campaign=generic)
+
+**Deploy on Railway:** [Supabase template](https://railway.com/deploy/supabase-or-just-updated-firebase-altern?referralCode=Z1xivh&utm_medium=integration&utm_source=template&utm_campaign=generic)
+
 Thin wrapper images that let the self-hosted [Supabase](https://github.com/supabase/supabase) stack
 run as a Railway template with nothing to fill in at deploy time.
 
